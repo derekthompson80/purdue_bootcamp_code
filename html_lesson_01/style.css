@@ -1,0 +1,137 @@
+/*body {*/
+/*  position: relative; !* For positioning the pseudo-element *!*/
+/*  background-color: grey;*/
+/*}*/
+
+/*body::before {*/
+/*  content: '';*/
+/*  position: absolute;*/
+/*  top: 0;*/
+/*  left: 0;*/
+/*  width: 100%;*/
+/*  height: 100%;*/
+/*  background: repeating-linear-gradient(*/
+/*    -45deg,*/
+/*    rgba(255, 255, 255, 0.1) 0px,*/
+/*    rgba(255, 255, 255, 0.1) 2px,*/
+/*    transparent 2px,*/
+/*    transparent 10px*/
+/*  );*/
+/*  animation: rain-diagonal 0.8s linear infinite;*/
+/*  pointer-events: none;*/
+/*}*/
+
+/*@keyframes rain-diagonal {*/
+/*  0% {*/
+/*    background-position: 0 0;*/
+/*  }*/
+/*  100% {*/
+/*    background-position: 100px 100px; !* Adjust values for speed and direction *!*/
+/*  }*/
+/*}*/
+
+body {
+  background-color: blueviolet;
+  padding: 20px;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 130px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  padding: 12px 16px;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/*body {*/
+/*  background-image: url("pexels-suzyhazelwood-1204743.jpg");*/
+/*  background-size: 20% 20%;*/
+/*  background-repeat: no-repeat; !* Prevents the image from repeating *! !* Scales the image to cover the entire background *!*/
+/*  background-position: top center;   !* Centers the image within the element *!*/
+/*}*/
+
+#biography {
+  color: yellow;
+}
+
+#works-heading {
+  color: yellow;
+}
+
+.description {
+  color: white;
+}
+
+.ibox-header {
+  color: white;
+}
+
+#major-novels {
+  color: yellow;
+}
+
+#other-works {
+  color: yellow;
+}
+ul {
+  color: white;
+}
+
+li {
+  color: white;
+}
+
+p {
+    font-size: 1.5em;
+}
+
+p {
+  color: white;
+}
+
+table {
+  color: honeydew;
+}
+
+.Jane_Austen_Title {
+  font-size: 2em; /* Adjust as needed */
+  font-weight: bold;
+  transform: rotate(1deg);
+
+}
+
+ .Jane_Austen_Title {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #ccc;
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: swing-text 2s linear infinite;
+  }
+
+@keyframes swing-text {
+      0% {
+        transform: rotate(0deg);
+      }
+      25% {
+        transform: rotate(5deg); /* Swing slightly right */
+      }
+      50% {
+        transform: rotate(0deg); /* Back to center */
+      }
+      75% {
+        transform: rotate(-5deg); /* Swing slightly left */
+      }
+      100% {
+        transform: rotate(0deg); /* Back to center */
+      }
+    }
