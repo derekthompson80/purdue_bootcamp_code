@@ -1,19 +1,22 @@
 let currentScene =  "start";
 let adventurerName = prompt("What is your name?");
-let adventurerLevel = 1;
+
 
 const gameText = document.getElementById("game_text");
 const choicesDiv = document.getElementById("choices");
 const playerInfoDiv = document.getElementById("player_info");
 
+let playerLevel ={
+    level: 1
+};
+
 let player = {
-        level: adventurerLevel,
-        name: adventurerName, // The player's name
-        inventory: [], // An array to hold items the player is carrying
-        health: 10 + adventurerLevel, // Player's health points
-        strength: adventurerLevel, // Player's strength for combat or actions
-        charisma: adventurerLevel,
-        gold: 0,
+    name: adventurerName, // The player's name
+    inventory: [], // An array to hold items the player is carrying
+    health: 10 + playerLevel.level, // Player's health points
+    strength: playerLevel.level, // Player's strength for combat or actions
+    charisma: playerLevel.level,
+    gold: 0,
 
         // Add other relevant properties like 'gold', 'statusEffects', etc.
 };
@@ -32,7 +35,21 @@ function renderPlayer() {
         <strong>Inventory:</strong> ${inv}
         <strong>Gold:</strong> ${player.gold}<br>
     `;
-    // Ensure the game ends if health reaches 0, even if health changed outside takeDamage()
+}
+
+// Updates player stats derived from the current level; call this at each scene
+function updatePlayerForScene() {
+    // Keep level-scaling stats in sync with playerLevel
+    player.strength = playerLevel.level;
+    player.charisma = playerLevel.level;
+
+    // Track and cap by max health derived from level without auto-healing
+    player.maxHealth = 10 + playerLevel.level;
+    if (typeof player.health === "number" && typeof player.maxHealth === "number") {
+        // If current health somehow exceeds new max (e.g., from prior design), cap it
+        if (player.health > player.maxHealth) player.health = player.maxHealth;
+        // Do not increase health automatically when leveling unless game rules say so
+    }
 }
 
 function playerHealthIsZero() {
@@ -43,17 +60,12 @@ function playerHealthIsZero() {
 }
 
 // Method to add an item to the player's inventory
-function pickupItem(item) {
-    player.inventory.push(item);
-    renderPlayer();
-}
 
 // Method to remove an item from the player's inventory
 function dropItem(item) {
     const itemIndex = player.inventory.indexOf(item);
     if (itemIndex > -1) {
       player.inventory.splice(itemIndex, 1);
-      renderPlayer();
       return true; // Item successfully dropped
     }
     return false; // Item not found
@@ -62,25 +74,24 @@ function dropItem(item) {
 // Method to take damage
 function takeDamage(amount) {
     player.health -= amount;
-    if (player.health === 0) {
+    if (player.health <= 0) {
       player.health = 0;
-      renderPlayer();
-      showScene("gameOver");
-      return;
+      return showScene("gameOver");
+
     }
-    renderPlayer();
 }
 
 // Method to heal
 function heal(amount) {
     player.health += amount;
-    renderPlayer();
 }
 
 function showScene(sceneKey) {
   const scene = scenes[sceneKey];
   currentScene = sceneKey;
-
+  // Update player each scene to keep stats in sync with level
+  updatePlayerForScene?.();
+  renderPlayer?.();
   if (!gameText || !choicesDiv) {
     console.error("Missing required game elements in the DOM.");
     return;
@@ -97,7 +108,7 @@ function showScene(sceneKey) {
   }
 
   if (sceneKey === "gameOver") {
-      renderPlayer();
+
       gameText.innerText = "Game Over.";
       choicesDiv.innerHTML = "";
       const backBtn = document.createElement("button");
@@ -108,7 +119,6 @@ function showScene(sceneKey) {
   }
 
   if (sceneKey === "fightOrc") {
-      renderPlayer();
       const rollOutCome = gameText.innerText = handleChoice("fightOrc");
       choicesDiv.innerHTML = "";
       if (rollOutCome === "You successfully hit the orc!") {
@@ -123,7 +133,6 @@ function showScene(sceneKey) {
           backBtn.addEventListener("click", () => showScene("fightOrcLose"));
           choicesDiv.appendChild(backBtn);
       }
-      renderPlayer();
       return;
   }
 
@@ -142,7 +151,6 @@ function showScene(sceneKey) {
           backBtn.addEventListener("click", () => showScene("failedToPersuade"));
           choicesDiv.appendChild(backBtn);
       }
-      renderPlayer();
       return;
   }
 
@@ -169,40 +177,44 @@ function diceRoller(bonus = 0) {
 
 function handleChoice(choice) {
     let outcomeText = "";
-    renderPlayer();
 
-    if (choice === "attempt_to_open_door") {
-        const strengthRoll = diceRoller(player.strength); // Roll a d20
-        if (strengthRoll >= 4) { // Assuming a DC of 4 to open the door
+    if (playerHealthIsZero() <= 0) {
+        outcomeText = "You are dead.";
+    } else if (choice === "attempt_to_open_door") {
+        const strengthRoll = diceRoller(player.strength);
+        if (strengthRoll >= 4) {
             outcomeText = "You successfully force open the door!";
-            // Update game state, move to a new location, etc.
         } else {
             outcomeText = "The door remains stubbornly shut.";
         }
     } else if (choice === "persuadeGuildedToPass") {
-        const charismaRoll = diceRoller(player.charisma); // Roll a d20 for persuasion
-        if (charismaRoll >= 18) { // Assuming a DC of 15
-            outcomeText = "The guild is swayed by your words you pass the test and are rewarded with 25 gold coins.";
+        const charismaRoll = diceRoller(player.charisma);
+        if (charismaRoll >= 18) {
+            outcomeText = "The guild is swayed by your words and lets you pass.";
+            player.gold += 25;
         } else {
-                outcomeText = "The guild looks unconvinced and they look on you with dismay.";
+            outcomeText = "The guild looks unconvinced and they look on you with dismay.";
         }
     } else if (choice === "fightOrc") {
         const weaponRoll = diceRoller(player.strength);
-        if (weaponRoll >= 22) {
+        if (weaponRoll >= 1) {
             outcomeText = "You successfully hit the orc!";
-            player.level += 2;
-            player.inventory.push( "sword", "key", "health potion");
+            playerLevel.level += 1;
+            player.inventory.push("sword", "key", "health potion");
             player.gold += 100;
-            
         } else {
             takeDamage(5);
             outcomeText = "Your attack did not hit the orc!";
         }
     }
+    updatePlayerForScene?.();
+    renderPlayer?.();
     return outcomeText;
-    }
+}
+
 
 const scenes = {
+
   start: {
     text: `${player.name}, After walking for some time you see a cave in the distance.`,
     choices: [
